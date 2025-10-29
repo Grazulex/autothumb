@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  autothumb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: autothumb
+    volumes:
+      # Mount your videos directory (adjust path as needed)
+      - ./videos:/app/videos:ro
+      # Mount output directory
+      - ./output:/app/output
+      # Mount source for development
+      - ./src:/app/src
+    environment:
+      # Claude API key (set in .env file)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # Optional: custom output path
+      - OUTPUT_DIR=/app/output
+    stdin_open: true
+    tty: true
+    command: /bin/bash
