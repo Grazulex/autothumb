@@ -84,9 +84,9 @@ def generate(
     if not output:
         output = "./output/thumbnail.jpg"
 
-    # Parse resolution
+    # Parse resolution - will be adjusted based on video format
     res_map = {"720p": (1280, 720), "1080p": (1920, 1080)}
-    target_resolution = res_map[resolution]
+    base_resolution = res_map[resolution]
 
     console.print(Panel.fit(
         f"[bold cyan]AutoThumb - Génération de Thumbnail[/bold cyan]\n\n"
@@ -110,8 +110,22 @@ def generate(
             task1 = progress.add_task("[cyan]Extraction des frames...", total=1)
 
             processor = VideoProcessor(video_path)
+            video_width = processor.metadata['width']
+            video_height = processor.metadata['height']
+
             console.print(f"\n[green]✓[/green] Vidéo chargée: {processor.metadata['duration']:.1f}s, "
-                         f"{processor.metadata['width']}x{processor.metadata['height']}")
+                         f"{video_width}x{video_height}")
+
+            # Detect video format and adjust thumbnail resolution
+            is_vertical = video_height > video_width
+            if is_vertical:
+                # For vertical videos (shorts), swap width and height
+                target_resolution = (base_resolution[1], base_resolution[0])
+                console.print(f"[cyan]ℹ[/cyan] Format vertical détecté, thumbnail: {target_resolution[0]}x{target_resolution[1]}")
+            else:
+                # For horizontal videos, use base resolution
+                target_resolution = base_resolution
+                console.print(f"[cyan]ℹ[/cyan] Format horizontal détecté, thumbnail: {target_resolution[0]}x{target_resolution[1]}")
 
             # Extract to a persistent directory, not temp
             frame_output_dir = os.path.join(os.path.dirname(output), "frames_temp")
